@@ -14,7 +14,7 @@ app = Flask(__name__)
 # Load Saved Model and Preprocessing Objects
 # ============================================
 
-model = load_model("models/ann_obesity_model.keras")
+model = load_model("models/ann_obesity_model.keras", compile=False)
 scaler = joblib.load("models/scaler.pkl")
 target_encoder = joblib.load("models/target_encoder.pkl")
 
