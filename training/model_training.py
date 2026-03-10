@@ -114,7 +114,7 @@ print(confusion_matrix(y_true, y_pred_classes))
 
 os.makedirs("models", exist_ok=True)
 
-model.save("models/ann_obesity_model.keras")
+model.save("models/ann_obesity_model.h5")
 
 print("\nModel Saved Successfully")
 print("ANN TRAINING COMPLETED")
