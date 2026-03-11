@@ -14,7 +14,7 @@ from tensorflow.keras.layers import Dense, Dropout
 
 # Initialize Flask app
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 # ============================================
 
