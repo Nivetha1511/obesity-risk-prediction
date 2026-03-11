@@ -1,44 +1,19 @@
-# ============================================
-# FLASK API FOR OBESITY PREDICTION
-# ============================================
-
 import numpy as np
 import joblib
 import os
 from flask import Flask, request, jsonify
+from tensorflow.keras.models import load_model
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-
-# Initialize Flask app
 app = Flask(__name__)
 
-# ============================================
-# Recreate ANN Model Architecture
-# ============================================
-
-model = Sequential()
-
-model.add(Dense(64, activation='relu', input_shape=(16,)))
-model.add(Dropout(0.3))
-
-model.add(Dense(32, activation='relu'))
-model.add(Dropout(0.3))
-
-model.add(Dense(7, activation='softmax'))
-
-# Load trained weights
-model.load_weights("models/ann_obesity_model.keras")
+# Load trained model
+model = load_model("models/ann_obesity_model.keras", compile=False)
 
 # Load preprocessing objects
 scaler = joblib.load("models/scaler.pkl")
 target_encoder = joblib.load("models/target_encoder.pkl")
 
 print("Model and Preprocessing Objects Loaded Successfully")
-
-# ============================================
-# Prediction Endpoint
-# ============================================
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -65,7 +40,6 @@ def predict():
         ]
 
         input_array = np.array(input_data).reshape(1, -1)
-
         input_scaled = scaler.transform(input_array)
 
         prediction = model.predict(input_scaled)
@@ -81,10 +55,6 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)})
-
-# ============================================
-# Run App
-# ============================================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
