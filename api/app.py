@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 app = Flask(__name__)
 
 # Load trained model
-model = load_model("models/ann_obesity_model.h5")
+model = load_model("models/ann_obesity_model.h5", compile=False)
 
 # Load preprocessing objects
 scaler = joblib.load("models/scaler.pkl")
