@@ -11,7 +11,7 @@ def home():
     return "Obesity Prediction API Running"
 
 # Load trained model
-model = load_model("models/ann_obesity_model.h5", compile=False)
+model = load_model("models/ann_obesity_model.keras", compile=False)
 
 # Load preprocessing objects
 scaler = joblib.load("models/scaler.pkl")
