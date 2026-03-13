@@ -6,6 +6,10 @@ from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
+@app.route("/")
+def home():
+    return "Obesity Prediction API Running"
+
 # Load trained model
 model = load_model("models/ann_obesity_model.h5", compile=False)
 
