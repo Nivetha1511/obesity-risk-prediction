@@ -11,7 +11,11 @@ from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.callbacks import EarlyStopping
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
+
 import joblib
 
 # ============================================
@@ -26,7 +30,31 @@ y_test = pd.read_csv("data/processed/y_test.csv").values.flatten()
 print("Data Loaded Successfully")
 
 # ============================================
-# STEP 2: One-Hot Encode Target
+# STEP 2: Create and Save Scaler
+# ============================================
+
+scaler = StandardScaler()
+scaler.fit(X_train)
+
+# Save scaler for API prediction
+os.makedirs("models", exist_ok=True)
+joblib.dump(scaler, "models/scaler.pkl")
+
+print("Scaler Saved Successfully")
+
+# ============================================
+# STEP 3: Save Target Encoder
+# ============================================
+
+encoder = LabelEncoder()
+encoder.fit(y_train)
+
+joblib.dump(encoder, "models/target_encoder.pkl")
+
+print("Target Encoder Saved Successfully")
+
+# ============================================
+# STEP 4: One-Hot Encode Target
 # ============================================
 
 num_classes = 7
@@ -37,26 +65,23 @@ y_test = to_categorical(y_test, num_classes)
 print("Target Converted to One-Hot Encoding")
 
 # ============================================
-# STEP 3: Build ANN Model
+# STEP 5: Build ANN Model
 # ============================================
 
 model = Sequential()
 
-# Input Layer + Hidden Layer 1
 model.add(Dense(64, activation='relu', input_shape=(X_train.shape[1],)))
 model.add(Dropout(0.3))
 
-# Hidden Layer 2
 model.add(Dense(32, activation='relu'))
 model.add(Dropout(0.3))
 
-# Output Layer
 model.add(Dense(num_classes, activation='softmax'))
 
 print("ANN Model Architecture Created")
 
 # ============================================
-# STEP 4: Compile Model
+# STEP 6: Compile Model
 # ============================================
 
 model.compile(
@@ -68,7 +93,7 @@ model.compile(
 print("Model Compiled Successfully")
 
 # ============================================
-# STEP 5: Train Model
+# STEP 7: Train Model
 # ============================================
 
 early_stop = EarlyStopping(
@@ -90,14 +115,13 @@ history = model.fit(
 print("Model Training Completed")
 
 # ============================================
-# STEP 6: Evaluate Model
+# STEP 8: Evaluate Model
 # ============================================
 
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
 
 print("\nTest Accuracy:", round(accuracy * 100, 2), "%")
 
-# Predictions
 y_pred = model.predict(X_test)
 y_pred_classes = np.argmax(y_pred, axis=1)
 y_true = np.argmax(y_test, axis=1)
@@ -109,10 +133,8 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_true, y_pred_classes))
 
 # ============================================
-# STEP 7: Save Trained Model
+# STEP 9: Save Model
 # ============================================
-
-os.makedirs("models", exist_ok=True)
 
 model.save("models/ann_obesity_model.keras")
 
