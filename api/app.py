@@ -29,7 +29,7 @@ def predict():
             data["Age"],
             data["Height"],
             data["Weight"],
-            data["family_his"],
+            data["family_history_with_overweight"],
             data["FAVC"],
             data["FCVC"],
             data["NCP"],
