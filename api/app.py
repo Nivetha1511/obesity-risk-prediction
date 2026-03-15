@@ -6,15 +6,28 @@ from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
+# Global objects (lazy loading)
 model = None
 scaler = None
 target_encoder = None
+
+# Human-readable obesity labels
+obesity_labels = {
+    0: "Insufficient Weight",
+    1: "Normal Weight",
+    2: "Overweight Level I",
+    3: "Overweight Level II",
+    4: "Obesity Type I",
+    5: "Obesity Type II",
+    6: "Obesity Type III"
+}
 
 @app.route("/")
 def home():
     return "Obesity Risk Prediction API is running"
 
 
+# Load model and preprocessing objects only when needed
 def load_objects():
     global model, scaler, target_encoder
 
@@ -27,13 +40,12 @@ def load_objects():
     if target_encoder is None:
         target_encoder = joblib.load("models/target_encoder.pkl")
 
-    print("Model and preprocessing objects loaded")
+    print("Model and preprocessing objects loaded successfully")
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-
         load_objects()
 
         data = request.json
@@ -59,18 +71,24 @@ def predict():
 
         input_array = np.array(input_data).reshape(1, -1)
 
+        # Scale input
         input_scaled = scaler.transform(input_array)
 
+        # Make prediction
         prediction = model.predict(input_scaled)
 
         predicted_class = np.argmax(prediction, axis=1)
 
-        risk_level = target_encoder.inverse_transform(predicted_class)[0]
+        class_index = int(predicted_class[0])
+
+        risk_level = obesity_labels[class_index]
+
+        confidence = float(np.max(prediction))
 
         return jsonify({
-    "predicted_class_index": int(predicted_class[0].item()),
-    "predicted_risk_level": str(risk_level),
-    "confidence": float(np.max(prediction).item())
+            "predicted_class_index": class_index,
+            "predicted_risk_level": risk_level,
+            "confidence": confidence
         })
 
     except Exception as e:
