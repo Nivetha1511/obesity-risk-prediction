@@ -68,9 +68,9 @@ def predict():
         risk_level = target_encoder.inverse_transform(predicted_class)[0]
 
         return jsonify({
-            "predicted_class_index": int(predicted_class[0]),
-            "predicted_risk_level": risk_level,
-            "confidence": float(np.max(prediction))
+    "predicted_class_index": int(predicted_class[0].item()),
+    "predicted_risk_level": str(risk_level),
+    "confidence": float(np.max(prediction).item())
         })
 
     except Exception as e:
