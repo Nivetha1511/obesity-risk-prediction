@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Health Questionnaire</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Health Questionnaire</h2>
+
+<div class="question-card">
+<label>Gender</label>
+<select id="Gender">
+<option value="1">Male</option>
+<option value="0">Female</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Age</label>
+<input type="number" id="Age">
+</div>
+
+<div class="question-card">
+<label>Height (meters)</label>
+<input type="number" step="0.01" id="Height">
+</div>
+
+<div class="question-card">
+<label>Weight (kg)</label>
+<input type="number" id="Weight">
+</div>
+
+<div class="question-card">
+<label>Family History of Obesity</label>
+<select id="family_history_with_overweight">
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Do you consume high calorie food?</label>
+<select id="FAVC">
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Vegetable Consumption</label>
+<select id="FCVC">
+<option value="1">Low</option>
+<option value="2">Medium</option>
+<option value="3">High</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Number of Main Meals</label>
+<select id="NCP">
+<option value="1">1 Meal</option>
+<option value="2">2 Meals</option>
+<option value="3">3 Meals</option>
+<option value="4">More than 3</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Eat Between Meals</label>
+<select id="CAEC">
+<option value="0">No</option>
+<option value="1">Sometimes</option>
+<option value="2">Frequently</option>
+<option value="3">Always</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Smoking</label>
+<select id="SMOKE">
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Water Intake (Liters)</label>
+<select id="CH2O">
+<option value="1">Less than 1L</option>
+<option value="2">1 - 2L</option>
+<option value="3">More than 2L</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Monitor Calorie Intake?</label>
+<select id="SCC">
+<option value="1">Yes</option>
+<option value="0">No</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Physical Activity (hours per week)</label>
+<input type="number" id="FAF">
+</div>
+
+<div class="question-card">
+<label>Daily Screen Time (hours)</label>
+<input type="number" id="TUE">
+</div>
+
+<div class="question-card">
+<label>Alcohol Consumption</label>
+<select id="CALC">
+<option value="0">No</option>
+<option value="1">Sometimes</option>
+<option value="2">Frequently</option>
+</select>
+</div>
+
+<div class="question-card">
+<label>Transportation</label>
+<select id="MTRANS">
+<option value="0">Walking</option>
+<option value="1">Bike</option>
+<option value="2">Public Transport</option>
+<option value="3">Car</option>
+</select>
+</div>
+
+<button onclick="predictRisk()">Predict Risk</button>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

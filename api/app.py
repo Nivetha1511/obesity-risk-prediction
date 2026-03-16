@@ -2,14 +2,18 @@ import numpy as np
 import joblib
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend access
+
 
 # Global objects (lazy loading)
 model = None
 scaler = None
 target_encoder = None
+
 
 # Human-readable obesity labels
 obesity_labels = {
@@ -21,6 +25,7 @@ obesity_labels = {
     5: "Obesity Type II",
     6: "Obesity Type III"
 }
+
 
 @app.route("/")
 def home():
@@ -48,7 +53,7 @@ def predict():
     try:
         load_objects()
 
-        data = request.json
+        data = request.get_json()
 
         input_data = [
             data["Gender"],
@@ -74,15 +79,13 @@ def predict():
         # Scale input
         input_scaled = scaler.transform(input_array)
 
-        # Make prediction
+        # Model prediction
         prediction = model.predict(input_scaled)
 
         predicted_class = np.argmax(prediction, axis=1)
-
         class_index = int(predicted_class[0])
 
         risk_level = obesity_labels[class_index]
-
         confidence = float(np.max(prediction))
 
         return jsonify({
