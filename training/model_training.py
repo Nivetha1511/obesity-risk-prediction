@@ -1,5 +1,5 @@
 # ============================================
-# ANN MODEL TRAINING
+# FINAL FIXED ANN MODEL TRAINING
 # ============================================
 
 import numpy as np
@@ -15,9 +15,10 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.utils.class_weight import compute_class_weight
 
 # ============================================
-# STEP 1: Load Processed Data
+# STEP 1: Load Data
 # ============================================
 
 X_train_df = pd.read_csv("data/processed/X_train.csv")
@@ -29,26 +30,14 @@ y_test = pd.read_csv("data/processed/y_test.csv").values.flatten()
 print("Data Loaded Successfully")
 
 # ============================================
-# STEP 2: Save Feature Names
-# ============================================
-
-feature_names = list(X_train_df.columns)
-
-os.makedirs("models", exist_ok=True)
-
-joblib.dump(feature_names, "models/feature_names.pkl")
-
-print("Feature names saved")
-
-# ============================================
-# STEP 3: Convert to Numpy Arrays
+# STEP 2: Convert to Numpy
 # ============================================
 
 X_train = X_train_df.values
 X_test = X_test_df.values
 
 # ============================================
-# STEP 4: Create and Save Scaler
+# STEP 3: Scale Features
 # ============================================
 
 scaler = StandardScaler()
@@ -56,12 +45,13 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
+os.makedirs("models", exist_ok=True)
 joblib.dump(scaler, "models/scaler.pkl")
 
-print("Scaler Saved Successfully")
+print("Scaler Saved")
 
 # ============================================
-# STEP 5: Encode Target Labels
+# STEP 4: Encode Target
 # ============================================
 
 encoder = LabelEncoder()
@@ -71,10 +61,10 @@ y_test_encoded = encoder.transform(y_test)
 
 joblib.dump(encoder, "models/target_encoder.pkl")
 
-print("Target Encoder Saved Successfully")
+print("Encoder Saved")
 
 # ============================================
-# STEP 6: One-Hot Encode Target
+# STEP 5: One-hot Encoding
 # ============================================
 
 num_classes = len(np.unique(y_train_encoded))
@@ -82,38 +72,50 @@ num_classes = len(np.unique(y_train_encoded))
 y_train_cat = to_categorical(y_train_encoded, num_classes)
 y_test_cat = to_categorical(y_test_encoded, num_classes)
 
-print("Target Converted to One-Hot Encoding")
+# ============================================
+# STEP 6: HANDLE IMBALANCE (VERY IMPORTANT)
+# ============================================
+
+class_weights = compute_class_weight(
+    class_weight='balanced',
+    classes=np.unique(y_train_encoded),
+    y=y_train_encoded
+)
+
+class_weights = dict(enumerate(class_weights))
+
+print("Class Weights:", class_weights)
 
 # ============================================
-# STEP 7: Build ANN Model
+# STEP 7: Build BETTER MODEL
 # ============================================
 
 model = Sequential()
 
-model.add(Dense(64, activation='relu', input_shape=(X_train.shape[1],)))
+model.add(Dense(128, activation='relu', input_shape=(X_train.shape[1],)))
+model.add(Dropout(0.4))
+
+model.add(Dense(64, activation='relu'))
 model.add(Dropout(0.3))
 
 model.add(Dense(32, activation='relu'))
-model.add(Dropout(0.3))
 
 model.add(Dense(num_classes, activation='softmax'))
 
-print("ANN Model Architecture Created")
+print("Model Built")
 
 # ============================================
-# STEP 8: Compile Model
+# STEP 8: Compile
 # ============================================
 
 model.compile(
-    optimizer=Adam(learning_rate=0.001),
+    optimizer=Adam(learning_rate=0.0005),
     loss='categorical_crossentropy',
     metrics=['accuracy']
 )
 
-print("Model Compiled Successfully")
-
 # ============================================
-# STEP 9: Train Model
+# STEP 9: Train
 # ============================================
 
 early_stop = EarlyStopping(
@@ -128,14 +130,15 @@ history = model.fit(
     validation_split=0.2,
     epochs=100,
     batch_size=32,
+    class_weight=class_weights,  # 🔥 KEY FIX
     callbacks=[early_stop],
     verbose=1
 )
 
-print("Model Training Completed")
+print("Training Completed")
 
 # ============================================
-# STEP 10: Evaluate Model
+# STEP 10: Evaluate
 # ============================================
 
 loss, accuracy = model.evaluate(X_test, y_test_cat, verbose=0)
@@ -158,18 +161,4 @@ print(confusion_matrix(y_test_encoded, y_pred_classes))
 model.save("models/ann_obesity_model.keras")
 
 print("\nModel Saved Successfully")
-
-# ============================================
-# STEP 12: Save Metadata for API
-# ============================================
-
-metadata = {
-    "num_features": X_train.shape[1],
-    "num_classes": num_classes
-}
-
-joblib.dump(metadata, "models/model_metadata.pkl")
-
-print("Model metadata saved")
-
-print("\nANN TRAINING COMPLETED SUCCESSFULLY")
+print("🔥 FINAL MODEL TRAINING COMPLETE")
