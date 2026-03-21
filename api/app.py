@@ -34,6 +34,7 @@ def load_objects():
 
     if model is None:
         model = joblib.load("models/obesity_model.pkl")
+        print("🚀 NEW MODEL LOADED")
 
     if scaler is None:
         scaler = joblib.load("models/scaler.pkl")

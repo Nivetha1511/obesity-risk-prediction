@@ -9,6 +9,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
 
 # ============================================
+# STEP 0: FIX PATH (VERY IMPORTANT)
+# ============================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(BASE_DIR, "..", "models")
+
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+# ============================================
 # STEP 1: Load Data
 # ============================================
 
@@ -21,7 +30,7 @@ y_test = pd.read_csv("data/processed/y_test.csv").values.flatten()
 print("Data Loaded")
 
 # ============================================
-# 🔥 STEP 2: FIX COLUMN NAMES (CRITICAL)
+# STEP 2: FIX COLUMN NAMES
 # ============================================
 
 correct_columns = [
@@ -37,23 +46,23 @@ X_test.columns = correct_columns
 print("Column names fixed")
 
 # ============================================
-# STEP 3: Save Feature Names
+# STEP 3: SAVE FEATURE NAMES
 # ============================================
 
-os.makedirs("models", exist_ok=True)
-joblib.dump(correct_columns, "models/feature_names.pkl")
+feature_path = os.path.join(MODEL_DIR, "feature_names.pkl")
+joblib.dump(correct_columns, feature_path)
 
-print("Feature names saved")
+print("Feature names saved at:", feature_path)
 
 # ============================================
-# STEP 4: Check Class Distribution
+# STEP 4: CHECK DISTRIBUTION
 # ============================================
 
 print("\nBefore SMOTE:")
 print(pd.Series(y_train).value_counts())
 
 # ============================================
-# STEP 5: Apply SMOTE
+# STEP 5: APPLY SMOTE
 # ============================================
 
 smote = SMOTE(random_state=42)
@@ -63,7 +72,7 @@ print("\nAfter SMOTE:")
 print(pd.Series(y_train).value_counts())
 
 # ============================================
-# STEP 6: Scaling
+# STEP 6: SCALING
 # ============================================
 
 scaler = StandardScaler()
@@ -71,12 +80,13 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-joblib.dump(scaler, "models/scaler.pkl")
+scaler_path = os.path.join(MODEL_DIR, "scaler.pkl")
+joblib.dump(scaler, scaler_path)
 
-print("Scaler Saved")
+print("Scaler saved at:", scaler_path)
 
 # ============================================
-# STEP 7: Train Model
+# STEP 7: TRAIN MODEL
 # ============================================
 
 model = GradientBoostingClassifier(
@@ -91,7 +101,7 @@ model.fit(X_train_scaled, y_train)
 print("Model Trained")
 
 # ============================================
-# STEP 8: Evaluate
+# STEP 8: EVALUATE
 # ============================================
 
 y_pred = model.predict(X_test_scaled)
@@ -103,10 +113,12 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 # ============================================
-# STEP 9: Save Model
+# STEP 9: SAVE MODEL
 # ============================================
 
-joblib.dump(model, "models/obesity_model.pkl")
+model_path = os.path.join(MODEL_DIR, "obesity_model.pkl")
+joblib.dump(model, model_path)
 
-print("\nModel Saved Successfully")
+print("Model saved at:", model_path)
+
 print("\n🚀 TRAINING COMPLETED SUCCESSFULLY")
