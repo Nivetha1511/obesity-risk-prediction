@@ -49,35 +49,30 @@ def predict():
 
         data = request.get_json()
 
-        # ✅ Create dictionary
-        input_dict = {
-            "Gender": data["Gender"],
-            "Age": data["Age"],
-            "Height": data["Height"],
-            "Weight": data["Weight"],
-            "family_history_with_overweight": data["family_history_with_overweight"],
-            "FAVC": data["FAVC"],
-            "FCVC": data["FCVC"],
-            "NCP": data["NCP"],
-            "CAEC": data["CAEC"],
-            "SMOKE": data["SMOKE"],
-            "CH2O": data["CH2O"],
-            "SCC": data["SCC"],
-            "FAF": data["FAF"],
-            "TUE": data["TUE"],
-            "CALC": data["CALC"],
-            "MTRANS": data["MTRANS"]
-        }
+        # ✅ FIXED ORDER (match training exactly)
+        input_data = [
+            data["Gender"],
+            data["Age"],
+            data["Height"],
+            data["Weight"],
+            data["family_history_with_overweight"],
+            data["FAVC"],
+            data["FCVC"],
+            data["NCP"],
+            data["CAEC"],
+            data["SMOKE"],
+            data["CH2O"],
+            data["SCC"],
+            data["FAF"],
+            data["TUE"],
+            data["CALC"],
+            data["MTRANS"]
+        ]
 
-        # ✅ Align order with training
-        ordered_input = [input_dict[col] for col in feature_names]
+        input_array = np.array(input_data).reshape(1, -1)
 
-        input_array = np.array(ordered_input).reshape(1, -1)
-
-        # Scale
         input_scaled = scaler.transform(input_array)
 
-        # Predict
         prediction = model.predict(input_scaled)
 
         print("RAW PREDICTION:", prediction)
