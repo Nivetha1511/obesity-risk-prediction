@@ -21,25 +21,39 @@ y_test = pd.read_csv("data/processed/y_test.csv").values.flatten()
 print("Data Loaded")
 
 # ============================================
-# STEP 2: Save Feature Names (CRITICAL)
+# 🔥 STEP 2: FIX COLUMN NAMES (CRITICAL)
 # ============================================
 
-feature_names = list(X_train.columns)
+correct_columns = [
+    "Gender", "Age", "Height", "Weight",
+    "family_history_with_overweight", "FAVC", "FCVC", "NCP",
+    "CAEC", "SMOKE", "CH2O", "SCC",
+    "FAF", "TUE", "CALC", "MTRANS"
+]
+
+X_train.columns = correct_columns
+X_test.columns = correct_columns
+
+print("Column names fixed")
+
+# ============================================
+# STEP 3: Save Feature Names
+# ============================================
 
 os.makedirs("models", exist_ok=True)
-joblib.dump(feature_names, "models/feature_names.pkl")
+joblib.dump(correct_columns, "models/feature_names.pkl")
 
 print("Feature names saved")
 
 # ============================================
-# STEP 3: Check Class Distribution (Before SMOTE)
+# STEP 4: Check Class Distribution
 # ============================================
 
 print("\nBefore SMOTE:")
 print(pd.Series(y_train).value_counts())
 
 # ============================================
-# STEP 4: Apply SMOTE (Balance Data)
+# STEP 5: Apply SMOTE
 # ============================================
 
 smote = SMOTE(random_state=42)
@@ -49,7 +63,7 @@ print("\nAfter SMOTE:")
 print(pd.Series(y_train).value_counts())
 
 # ============================================
-# STEP 5: Scaling
+# STEP 6: Scaling
 # ============================================
 
 scaler = StandardScaler()
@@ -62,7 +76,7 @@ joblib.dump(scaler, "models/scaler.pkl")
 print("Scaler Saved")
 
 # ============================================
-# STEP 6: Train Model
+# STEP 7: Train Model
 # ============================================
 
 model = GradientBoostingClassifier(
@@ -77,7 +91,7 @@ model.fit(X_train_scaled, y_train)
 print("Model Trained")
 
 # ============================================
-# STEP 7: Evaluate Model
+# STEP 8: Evaluate
 # ============================================
 
 y_pred = model.predict(X_test_scaled)
@@ -89,7 +103,7 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 # ============================================
-# STEP 8: Save Model
+# STEP 9: Save Model
 # ============================================
 
 joblib.dump(model, "models/obesity_model.pkl")
