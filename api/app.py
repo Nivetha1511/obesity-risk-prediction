@@ -10,6 +10,7 @@ CORS(app)
 # Global objects (lazy loading)
 model = None
 scaler = None
+feature_names = None
 
 # Human-readable labels
 obesity_labels = {
@@ -27,9 +28,9 @@ def home():
     return "Obesity Risk Prediction API is running"
 
 
-# Load model & scaler
+# Load model, scaler, and feature names
 def load_objects():
-    global model, scaler
+    global model, scaler, feature_names
 
     if model is None:
         model = joblib.load("models/obesity_model.pkl")
@@ -37,7 +38,10 @@ def load_objects():
     if scaler is None:
         scaler = joblib.load("models/scaler.pkl")
 
-    print("Model and scaler loaded successfully")
+    if feature_names is None:
+        feature_names = joblib.load("models/feature_names.pkl")
+
+    print("Model, scaler, and feature names loaded successfully")
 
 
 @app.route("/predict", methods=["POST"])
@@ -47,36 +51,37 @@ def predict():
 
         data = request.get_json()
 
-        # ✅ Correct feature order
-        input_data = [
-            data["Gender"],
-            data["Age"],
-            data["Height"],
-            data["Weight"],
-            data["family_history_with_overweight"],
-            data["FAVC"],
-            data["FCVC"],
-            data["NCP"],
-            data["CAEC"],
-            data["SMOKE"],
-            data["CH2O"],
-            data["SCC"],
-            data["FAF"],
-            data["TUE"],
-            data["CALC"],
-            data["MTRANS"]
-        ]
+        # ✅ Create dictionary from input
+        input_dict = {
+            "Gender": data["Gender"],
+            "Age": data["Age"],
+            "Height": data["Height"],
+            "Weight": data["Weight"],
+            "family_history_with_overweight": data["family_history_with_overweight"],
+            "FAVC": data["FAVC"],
+            "FCVC": data["FCVC"],
+            "NCP": data["NCP"],
+            "CAEC": data["CAEC"],
+            "SMOKE": data["SMOKE"],
+            "CH2O": data["CH2O"],
+            "SCC": data["SCC"],
+            "FAF": data["FAF"],
+            "TUE": data["TUE"],
+            "CALC": data["CALC"],
+            "MTRANS": data["MTRANS"]
+        }
 
-        input_array = np.array(input_data).reshape(1, -1)
+        # ✅ Use correct feature order from training
+        input_array = np.array([input_dict[col] for col in feature_names]).reshape(1, -1)
 
         # Scale input
         input_scaled = scaler.transform(input_array)
 
-        # ✅ Gradient Boosting Prediction
+        # Prediction
         predicted_class = model.predict(input_scaled)
         class_index = int(predicted_class[0])
 
-        # ✅ Confidence using predict_proba
+        # Confidence
         probabilities = model.predict_proba(input_scaled)
         confidence = round(float(np.max(probabilities)), 2)
 
