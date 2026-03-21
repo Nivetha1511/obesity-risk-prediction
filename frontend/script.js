@@ -67,12 +67,15 @@ body:JSON.stringify(data)
 .then(response => response.json())
 .then(result => {
 
-console.log("API Response:", result);
+console.log("API Response:", result);  // 👈 This will now be visible
 
 localStorage.setItem("risk", result.predicted_risk_level);
 localStorage.setItem("confidence", result.confidence);
 
-window.location.href = "result.html";
+// ⏳ Delay redirect by 5 seconds
+setTimeout(() => {
+    window.location.href = "result.html";
+}, 5000);
 
 })
 .catch(error => {

@@ -6,16 +6,14 @@ from flask_cors import CORS
 from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend access
+CORS(app)
 
-
-# Global objects (lazy loading)
+# Global objects
 model = None
 scaler = None
-target_encoder = None
+feature_names = None
 
-
-# Human-readable obesity labels
+# Labels
 obesity_labels = {
     0: "Insufficient Weight",
     1: "Normal Weight",
@@ -26,15 +24,12 @@ obesity_labels = {
     6: "Obesity Type III"
 }
 
-
 @app.route("/")
 def home():
     return "Obesity Risk Prediction API is running"
 
-
-# Load model and preprocessing objects only when needed
 def load_objects():
-    global model, scaler, target_encoder
+    global model, scaler, feature_names
 
     if model is None:
         model = load_model("models/ann_obesity_model.keras", compile=False)
@@ -42,11 +37,10 @@ def load_objects():
     if scaler is None:
         scaler = joblib.load("models/scaler.pkl")
 
-    if target_encoder is None:
-        target_encoder = joblib.load("models/target_encoder.pkl")
+    if feature_names is None:
+        feature_names = joblib.load("models/feature_names.pkl")
 
-    print("Model and preprocessing objects loaded successfully")
-
+    print("Objects loaded successfully")
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -55,38 +49,44 @@ def predict():
 
         data = request.get_json()
 
-        input_data = [
-            data["Gender"],
-            data["Age"],
-            data["Height"],
-            data["Weight"],
-            data["family_history_with_overweight"],
-            data["FAVC"],
-            data["FCVC"],
-            data["NCP"],
-            data["CAEC"],
-            data["SMOKE"],
-            data["CH2O"],
-            data["SCC"],
-            data["FAF"],
-            data["TUE"],
-            data["CALC"],
-            data["MTRANS"]
-        ]
+        # ✅ Create dictionary
+        input_dict = {
+            "Gender": data["Gender"],
+            "Age": data["Age"],
+            "Height": data["Height"],
+            "Weight": data["Weight"],
+            "family_history_with_overweight": data["family_history_with_overweight"],
+            "FAVC": data["FAVC"],
+            "FCVC": data["FCVC"],
+            "NCP": data["NCP"],
+            "CAEC": data["CAEC"],
+            "SMOKE": data["SMOKE"],
+            "CH2O": data["CH2O"],
+            "SCC": data["SCC"],
+            "FAF": data["FAF"],
+            "TUE": data["TUE"],
+            "CALC": data["CALC"],
+            "MTRANS": data["MTRANS"]
+        }
 
-        input_array = np.array(input_data).reshape(1, -1)
+        # ✅ Align order with training
+        ordered_input = [input_dict[col] for col in feature_names]
 
-        # Scale input
+        input_array = np.array(ordered_input).reshape(1, -1)
+
+        # Scale
         input_scaled = scaler.transform(input_array)
 
-        # Model prediction
+        # Predict
         prediction = model.predict(input_scaled)
+
+        print("RAW PREDICTION:", prediction)
 
         predicted_class = np.argmax(prediction, axis=1)
         class_index = int(predicted_class[0])
 
         risk_level = obesity_labels[class_index]
-        confidence = float(np.max(prediction))
+        confidence = round(float(np.max(prediction)), 2)
 
         return jsonify({
             "predicted_class_index": class_index,
@@ -96,7 +96,6 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)})
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
